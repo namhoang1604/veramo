@@ -60,10 +60,29 @@ export class VeramoEd25519Signature2018 extends VeramoLdSignature {
     // overwrite the signer since we're not passing the private key and transmute doesn't support that behavior
     verificationKey.signer = () => signer as any
 
-    return new Ed25519Signature2018({
+    const suite = new Ed25519Signature2018({
       key: verificationKey,
       signer: signer,
     })
+
+    suite.ensureSuiteContext = ({ document }: { document: any; addSuiteContext: boolean }) => {
+      const credentialContextUrls = new Set([
+        'https://www.w3.org/2018/credentials/v1',
+        'https://www.w3.org/ns/credentials/v2',
+      ])
+      const firstContext = Array.isArray(document['@context'])
+        ? document['@context'][0]
+        : document['@context']
+      if (credentialContextUrls.has(firstContext) === true) {
+        return
+      }
+
+      throw new TypeError(
+        `The document to be signed must contain this suite's @context, ` +
+          `"${JSON.stringify(document['@context'], null, 2)}".`,
+      )
+    }
+    return suite
   }
 
   getSuiteForVerification(): any {

@@ -20,6 +20,7 @@ import {
   isDefined,
   MANDATORY_CREDENTIAL_CONTEXT,
   mapIdentifierKeysToDoc,
+  normalizeContext,
   OrPromise,
   processEntryToArray,
   RecordLike,
@@ -144,9 +145,8 @@ export class CredentialIssuerLD implements IAgentPlugin {
     args: ICreateVerifiableCredentialLDArgs,
     context: IRequiredContext,
   ): Promise<VerifiableCredential> {
-    const credentialContext = processEntryToArray(
-      args?.credential?.['@context'],
-      MANDATORY_CREDENTIAL_CONTEXT,
+    const credentialContext = normalizeContext(
+      args?.credential?.['@context']
     )
     const credentialType = processEntryToArray(args?.credential?.type, 'VerifiableCredential')
     const credential: CredentialPayload = {

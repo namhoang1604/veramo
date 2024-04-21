@@ -24,6 +24,32 @@ import { sha256 } from '@noble/hashes/sha256'
  */
 export const MANDATORY_CREDENTIAL_CONTEXT = 'https://www.w3.org/2018/credentials/v1'
 
+export const MANDATORY_CREDENTIAL_CONTEXTS = ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/ns/credentials/v2']
+
+export function normalizeContext(context: string | string[] | any): string[] {
+  const contexts = processEntryToArray(context)
+  
+  // Ensure the context contains only one context of mandatory contexts or throw an error
+  const numberOfMandatoryContexts = MANDATORY_CREDENTIAL_CONTEXTS.reduce((numberOfMandatoryContexts, mandatoryContext) => {
+    if (contexts.includes(mandatoryContext)) {
+      return numberOfMandatoryContexts + 1
+    }
+    return numberOfMandatoryContexts
+  }, 0)
+
+  if (numberOfMandatoryContexts !== 1) {
+    throw new Error(`The context must contain one of the mandatory contexts ${MANDATORY_CREDENTIAL_CONTEXTS.join(' or ')}`)
+  }
+
+  // Put the mandatory context first
+  const mandatoryContextIndex = contexts.indexOf(MANDATORY_CREDENTIAL_CONTEXT)
+  if (mandatoryContextIndex !== -1) {
+    contexts.splice(mandatoryContextIndex, 1)
+    contexts.unshift(MANDATORY_CREDENTIAL_CONTEXT)
+  }
+  return contexts
+}
+
 /**
  * Processes an entry or an array of entries into an array of entries. If a `startWithEntry` param is provided, it is
  * set as the first item in the result array.

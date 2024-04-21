@@ -41,6 +41,7 @@ import {
   MANDATORY_CREDENTIAL_CONTEXT,
   processEntryToArray,
   intersect,
+  normalizeContext,
 } from '@veramo/utils'
 import Debug from 'debug'
 import { Resolvable } from 'did-resolver'
@@ -196,7 +197,7 @@ export class CredentialPlugin implements IAgentPlugin {
     context: IssuerAgentContext,
   ): Promise<VerifiableCredential> {
     let { credential, proofFormat, keyRef, removeOriginalFields, save, now, ...otherOptions } = args
-    const credentialContext = processEntryToArray(credential['@context'], MANDATORY_CREDENTIAL_CONTEXT)
+    const credentialContext = normalizeContext(credential['@context'])
     const credentialType = processEntryToArray(credential.type, 'VerifiableCredential')
 
     // only add issuanceDate for JWT

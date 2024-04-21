@@ -1,5 +1,7 @@
 import contextCredentialV1 from './contexts/www.w3.org_2018_credentials_v1.json' assert { type: 'json' }
+import contextCredentialV2 from './contexts/www.w3.org_ns_credentials_v2.json' assert { type: 'json' }
 import contextCredentialExamplesV1 from './contexts/www.w3.org_2018_credentials_examples_v1.json' assert { type: 'json' }
+import contextCredentialExamplesV2 from './contexts/www.w3.org_ns_credentials_examples_v2.json' assert { type: 'json' }
 import contextDidV1 from './contexts/www.w3.org_ns_did_v1.json' assert { type: 'json' }
 import contextSecurityV1 from './contexts/w3id.org_security_v1.json' assert { type: 'json' }
 import contextSecurityV2 from './contexts/w3id.org_security_v2.json' assert { type: 'json' }
@@ -27,7 +29,9 @@ import schema_org from './contexts/schema.org.json' assert { type: 'json' }
 // @ts-ignore
 export const LdDefaultContexts = new Map([
   ['https://www.w3.org/2018/credentials/v1', contextCredentialV1],
+  ['https://www.w3.org/ns/credentials/v2', contextCredentialV2],
   ['https://www.w3.org/2018/credentials/examples/v1', contextCredentialExamplesV1],
+  ['https://www.w3.org/ns/credentials/examples/v2', contextCredentialExamplesV2],
   ['https://www.w3.org/ns/did/v1', contextDidV1],
   ['https://w3id.org/did/v1', contextDidV1], //legacy
   ['https://w3id.org/security/v1', contextSecurityV1],
