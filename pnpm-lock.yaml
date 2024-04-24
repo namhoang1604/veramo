@@ -58,8 +58,8 @@ importers:
         specifier: 1.1.0
         version: 1.1.0
       credential-status:
-        specifier: 3.0.0
-        version: 3.0.0
+        specifier: link:./.tmp_npm/
+        version: link:.tmp_npm
       cross-env:
         specifier: 7.0.3
         version: 7.0.3
@@ -396,8 +396,8 @@ importers:
   packages/core-types:
     dependencies:
       credential-status:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: link:../../.tmp_npm
+        version: link:../../.tmp_npm
       debug:
         specifier: ^4.3.3
         version: 4.3.4
@@ -504,8 +504,8 @@ importers:
         specifier: workspace:^
         version: link:../utils
       credential-status:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: link:../../.tmp_npm
+        version: link:../../.tmp_npm
       did-jwt:
         specifier: ^8.0.0
         version: 8.0.0
@@ -1583,8 +1583,8 @@ importers:
         specifier: workspace:^
         version: link:../core-types
       credential-status:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: link:../../.tmp_npm
+        version: link:../../.tmp_npm
       cross-fetch:
         specifier: ^4.0.0
         version: 4.0.0
@@ -9729,12 +9729,6 @@ packages:
 
   /create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
-
-  /credential-status@3.0.0:
-    resolution: {integrity: sha512-kCHyxp+dtFVV1wy0auNZXwWWLIUmQTuw6uFLfdm5aRaN5JUWyR2Bv6aHLszB8sxEwRYgL6bqfQAUVCXTWo61jw==}
-    dependencies:
-      did-jwt: 8.0.0
-      did-resolver: 4.1.0
 
   /credentials-context@2.0.0:
     resolution: {integrity: sha512-/mFKax6FK26KjgV2KW2D4YqKgoJ5DVJpNt87X2Jc9IxT2HBMy7nEIlc+n7pEi+YFFe721XqrvZPd+jbyyBjsvQ==}

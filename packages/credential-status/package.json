@@ -6,13 +6,14 @@
   "exports": "./build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
+    "postinstall": "pnpm add --ignore-scripts ../../.tmp_npm/",
     "build": "tsc",
     "extract-api": "node ../cli/bin/veramo.js dev extract-api"
   },
   "dependencies": {
     "@veramo/core-types": "workspace:^",
     "@veramo/utils": "workspace:^",
-    "credential-status": "^3.0.0",
+    "credential-status": "link:../../.tmp_npm",
     "did-jwt": "^8.0.0",
     "did-resolver": "^4.1.0"
   },

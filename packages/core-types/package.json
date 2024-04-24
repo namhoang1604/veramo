@@ -12,6 +12,7 @@
   },
   "types": "build/index.d.ts",
   "scripts": {
+    "postinstall": "pnpm add --ignore-scripts ../../.tmp_npm/",
     "build": "tsc",
     "generate-plugin-schema": "node ../cli/bin/veramo.js dev generate-plugin-schema"
   },
@@ -32,7 +33,7 @@
     }
   },
   "dependencies": {
-    "credential-status": "^3.0.0",
+    "credential-status": "link:../../.tmp_npm",
     "debug": "^4.3.3",
     "did-jwt-vc": "^4.0.0",
     "did-resolver": "^4.1.0"
