@@ -12,6 +12,7 @@ import {
   IKeyManagerSharedSecretArgs,
   IKeyManagerSignArgs,
   IKeyManagerSignEthTXArgs,
+  IKeyManagerSignJOSE,
   IKeyManagerSignJWTArgs,
   ManagedKeyInfo,
   MinimalImportableKey,
@@ -67,6 +68,7 @@ export class KeyManager implements IAgentPlugin {
       keyManagerSignEthTX: this.keyManagerSignEthTX.bind(this),
       keyManagerSign: this.keyManagerSign.bind(this),
       keyManagerSharedSecret: this.keyManagerSharedSecret.bind(this),
+      keyManagerSignJOSE: this.keyManagerSignJOSE.bind(this),
     }
   }
 
@@ -231,5 +233,18 @@ export class KeyManager implements IAgentPlugin {
       const shared = await this.keyManagerSharedSecret({ secretKeyRef, publicKey })
       return getBytes('0x' + shared)
     }
+  }
+
+  /**
+   * Sign a JSON object using a key managed by this plugin
+   * @param kid - Key ID
+   * @param data - JSON object to sign
+   * @returns JWS string
+   */
+  async keyManagerSignJOSE({ kid, data }: IKeyManagerSignJOSE): Promise<string> {
+    const keyInfo = await this.store.getKey({ kid })
+    const kms = this.getKms(keyInfo.kms)
+    const uint8Array = Buffer.from(data, 'utf-8')
+    return kms.sign({ keyRef: keyInfo, data: uint8Array, envelopingProof: true })
   }
 }
