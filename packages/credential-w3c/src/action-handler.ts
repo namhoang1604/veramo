@@ -255,39 +255,43 @@ export class CredentialPlugin implements IAgentPlugin {
             'invalid_setup: your agent does not seem to have ICredentialIssuerEIP712 plugin installed',
           )
         }
-      } else {
-        if (otherOptions.issueJWT) {
+      } else if (proofFormat === 'EnvelopingProofJose') {
+        if (typeof context.agent.keyManagerSignJOSE == 'function') {
           verifiableCredential = await context.agent.keyManagerSignJOSE({
             kid: identifier.controllerKeyId,
             data: JSON.stringify(credential),
           })
         } else {
-          const key = pickSigningKey(identifier, keyRef)
-
-          debug('Signing VC with', identifier.did)
-          let alg = 'ES256K'
-          if (key.type === 'Ed25519') {
-            alg = 'EdDSA'
-          } else if (key.type === 'Secp256r1') {
-            alg = 'ES256'
-          }
-
-          const signer = wrapSigner(context, key, alg)
-          const jwt = await createVerifiableCredentialJwt(
-            credential as any,
-            { did: identifier.did, signer, alg },
-            { removeOriginalFields, ...otherOptions },
+          throw new Error(
+            'invalid_setup: your agent does not seem to have keyManagerSignJOSE plugin installed',
           )
-          //FIXME: flagging this as a potential privacy leak.
-          debug(jwt)
-          verifiableCredential = normalizeCredential(jwt)
         }
+      } else {
+        const key = pickSigningKey(identifier, keyRef)
+
+        debug('Signing VC with', identifier.did)
+        let alg = 'ES256K'
+        if (key.type === 'Ed25519') {
+          alg = 'EdDSA'
+        } else if (key.type === 'Secp256r1') {
+          alg = 'ES256'
+        }
+
+        const signer = wrapSigner(context, key, alg)
+        const jwt = await createVerifiableCredentialJwt(
+          credential as any,
+          { did: identifier.did, signer, alg },
+          { removeOriginalFields, ...otherOptions },
+        )
+        //FIXME: flagging this as a potential privacy leak.
+        debug(jwt)
+        verifiableCredential = normalizeCredential(jwt)
       }
       if (save) {
         let customVerifiableCredential = verifiableCredential
 
         // if the credential was issued as a JWT, save the original credential as well
-        if (verifiableCredential && otherOptions.issueJWT) {
+        if (verifiableCredential && proofFormat === 'EnvelopingProofJose') {
           customVerifiableCredential = credential as VerifiableCredential
         }
         await context.agent.dataStoreSaveVerifiableCredential({
