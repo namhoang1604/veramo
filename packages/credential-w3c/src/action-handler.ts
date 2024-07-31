@@ -648,7 +648,12 @@ async function isRevoked(
   )
 }
 
-/** */
+/**
+ * Verifies the DID signature of a JWT
+ * @param jws - The JWT to verify
+ * @param context - The VerifierAgentContext
+ * @returns The payload and protected header of the JWT if verification is successful
+ */
 async function handleDIDVerification(jws: string, context: VerifierAgentContext) {
   // get iss in header
   const parts = jws.split('.')
@@ -657,10 +662,16 @@ async function handleDIDVerification(jws: string, context: VerifierAgentContext)
   if (!didUrl) {
     throw new Error('Invalid JWT: iss field not found in header')
   }
+
+  const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'))
+  if (payload.issuer !== didUrl) {
+    throw new Error('Invalid JWT: iss field in header does not match issuer field in payload')
+  }
+
   // Resolve the DID to get the DID document
   const doc = await context.agent.resolveDid({ didUrl })
   let publicKey
-  let types = ['JsonWebKey']
+  let types = ['JsonWebKey'] // default type
   const verificationMethod = doc.didDocument?.verificationMethod
   if (verificationMethod && verificationMethod.length > 0) {
     let matchingVerificationMethod = verificationMethod.find((item) => types.includes(item.type))
