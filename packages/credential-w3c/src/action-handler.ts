@@ -617,8 +617,11 @@ function wrapSigner(
 
 function detectDocumentType(document: W3CVerifiableCredential | W3CVerifiablePresentation): DocumentFormat {
   // should put a check for enveloping proof before checking for jwt
-  if (typeof document === 'string' && (<VerifiableCredential>(<unknown>document)).includes('.'))
-    return DocumentFormat.ENVELOPING_PROOF
+  if (typeof document === 'string') {
+    const detectJWT = jose.decodeJwt(document)
+    if (typeof document === 'string' && detectJWT.hasOwnProperty('issuer'))
+      return 3 /* DocumentFormat.ENVELOPING_PROOF */
+  }
   if (typeof document === 'string' || (<VerifiableCredential>document)?.proof?.jwt) return DocumentFormat.JWT
   if ((<VerifiableCredential>document)?.proof?.type === 'EthereumEip712Signature2021')
     return DocumentFormat.EIP712
