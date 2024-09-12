@@ -405,7 +405,7 @@ export class CredentialPlugin implements IAgentPlugin {
     } else if (type === DocumentFormat.ENVELOPING_PROOF) {
       try {
         // compactVerify use for logging or further validation
-        await verifyJWS(credential as string, context)
+        const compactVerify = await verifyJWS(credential as string, context)
         // Process successfully completed, set appropriate values
         verificationResult.verified = true
         verificationResult.mediaType = 'vc' // or 'vp' based on your application context
