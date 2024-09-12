@@ -22,6 +22,10 @@ export class VeramoJsonWebSignature2020 extends VeramoLdSignature {
     // TODO: add support for ['Ed25519VerificationKey2018', 'Ed25519VerificationKey2020', 'Multikey'] and others
   }
 
+  getSupportedProofType(): string {
+    return 'JsonWebSignature2020'
+  }
+
   getSupportedVeramoKeyType(): TKeyType {
     return 'Ed25519'
   }
@@ -94,28 +98,7 @@ export class VeramoJsonWebSignature2020 extends VeramoLdSignature {
   }
 
   async preDidResolutionModification(didUrl: string, didDoc: DIDDocument): Promise<DIDDocument> {
-    if (!didUrl.includes('#') || didUrl === didDoc.id) {
-      return didDoc
-    }
-
-    try {
-      
-    } catch (error) {
-      console.error('Error in preDidResolutionModification', error)
-      
-    }
-    const supportedVerificationType = this.getSupportedVerificationType() // 'JsonWebKey2020'
-
-    const didDocJsonWebKey2020 = didDoc?.verificationMethod?.find(
-      (vm) => vm.type === supportedVerificationType,
-    ) as DIDDocument
-
-    if (!didDocJsonWebKey2020) {
-      return didDoc
-    }
-
-    // return the DID component (Verification Method)
-    didDocJsonWebKey2020['@context'] = didDoc['@context']
-    return didDocJsonWebKey2020
+    // do nothing
+    return didDoc
   }
 }
