@@ -288,15 +288,9 @@ export class CredentialPlugin implements IAgentPlugin {
         verifiableCredential = normalizeCredential(jwt)
       }
       if (save) {
-        let customVerifiableCredential = verifiableCredential
-
-        // if the credential was issued as a JWT, save the original credential as well
-        if (verifiableCredential && proofFormat === 'EnvelopingProofJose') {
-          customVerifiableCredential = credential as VerifiableCredential
+        if (verifiableCredential && proofFormat !== 'EnvelopingProofJose') {
+          await context.agent.dataStoreSaveVerifiableCredential({ verifiableCredential })
         }
-        await context.agent.dataStoreSaveVerifiableCredential({
-          verifiableCredential: customVerifiableCredential,
-        })
       }
 
       return verifiableCredential
@@ -411,12 +405,12 @@ export class CredentialPlugin implements IAgentPlugin {
     } else if (type === DocumentFormat.ENVELOPING_PROOF) {
       try {
         // compactVerify use for logging or further validation
-        const compactVerify = await handleDIDVerification(credential as string, context)
+        await verifyJWS(credential as string, context)
         // Process successfully completed, set appropriate values
         verificationResult.verified = true
         verificationResult.mediaType = 'vc' // or 'vp' based on your application context
-        verificationResult.document = JSON.parse(Buffer.from(credential.split('.')[1], 'base64').toString())
-        verifiedCredential = JSON.parse(Buffer.from(credential.split('.')[1], 'base64').toString())
+        verificationResult.document = jose.decodeJwt(credential)
+        verifiedCredential = jose.decodeJwt(credential)
       } catch (e) {
         throw new Error('invalid_argument: Could not verify the JWT')
       }
@@ -654,16 +648,16 @@ async function isRevoked(
  * @param context - The VerifierAgentContext
  * @returns The payload and protected header of the JWT if verification is successful
  */
-async function handleDIDVerification(jws: string, context: VerifierAgentContext) {
+async function verifyJWS(jws: string, context: VerifierAgentContext) {
   // get iss in header
   const parts = jws.split('.')
-  const header = JSON.parse(Buffer.from(parts[0], 'base64').toString('utf8'))
+  const header = jose.decodeProtectedHeader(jws)
   const didUrl = header.iss
   if (!didUrl) {
     throw new Error('Invalid JWT: iss field not found in header')
   }
 
-  const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'))
+  const payload = jose.decodeJwt(jws)
   if (payload.issuer !== didUrl) {
     throw new Error('Invalid JWT: iss field in header does not match issuer field in payload')
   }
