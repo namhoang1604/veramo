@@ -405,7 +405,7 @@ export class CredentialPlugin implements IAgentPlugin {
     } else if (type === DocumentFormat.ENVELOPING_PROOF) {
       try {
         // compactVerify use for logging or further validation
-        const compactVerify = await verifyJWS(credential as string, context)
+        const compactVerify = await verifyJWT(credential as string, context)
         // Process successfully completed, set appropriate values
         verificationResult.verified = true
         verificationResult.mediaType = 'vc' // or 'vp' based on your application context
@@ -617,8 +617,8 @@ function wrapSigner(
 
 function detectDocumentType(document: W3CVerifiableCredential | W3CVerifiablePresentation): DocumentFormat {
   // should put a check for enveloping proof before checking for jwt
-  if (typeof document === 'string' && (<VerifiableCredential>(<unknown>document)).includes('.'))
-    return DocumentFormat.ENVELOPING_PROOF
+  const detectJWT = jose.decodeProtectedHeader(document)
+  if (typeof document === 'string' && detectJWT) return DocumentFormat.ENVELOPING_PROOF
   if (typeof document === 'string' || (<VerifiableCredential>document)?.proof?.jwt) return DocumentFormat.JWT
   if ((<VerifiableCredential>document)?.proof?.type === 'EthereumEip712Signature2021')
     return DocumentFormat.EIP712
@@ -644,20 +644,19 @@ async function isRevoked(
 
 /**
  * Verifies the DID signature of a JWT
- * @param jws - The JWT to verify
+ * @param jwt - The JWT to verify
  * @param context - The VerifierAgentContext
  * @returns The payload and protected header of the JWT if verification is successful
  */
-async function verifyJWS(jws: string, context: VerifierAgentContext) {
+async function verifyJWT(jwt: string, context: VerifierAgentContext) {
   // get iss in header
-  const parts = jws.split('.')
-  const header = jose.decodeProtectedHeader(jws)
+  const header = jose.decodeProtectedHeader(jwt)
   const didUrl = header.iss
   if (!didUrl) {
     throw new Error('Invalid JWT: iss field not found in header')
   }
 
-  const payload = jose.decodeJwt(jws)
+  const payload = jose.decodeJwt(jwt)
   if (payload.issuer !== didUrl) {
     throw new Error('Invalid JWT: iss field in header does not match issuer field in payload')
   }
@@ -679,7 +678,7 @@ async function verifyJWS(jws: string, context: VerifierAgentContext) {
 
   try {
     if (publicKey) {
-      const { payload, protectedHeader } = await jose.compactVerify(jws, publicKey)
+      const { payload, protectedHeader } = await jose.compactVerify(jwt, publicKey)
       return { payload, protectedHeader }
     } else {
       throw new Error('Public key is undefined')
