@@ -409,10 +409,18 @@ export class CredentialPlugin implements IAgentPlugin {
         // Process successfully completed, set appropriate values
         verificationResult.verified = true
         verificationResult.mediaType = 'vc' // or 'vp' based on your application context
-        verificationResult.document = jose.decodeJwt(credential)
-        verifiedCredential = jose.decodeJwt(credential)
+        verificationResult.document = jose.decodeJwt(credential as string)
+        verifiedCredential = jose.decodeJwt(credential as string)
       } catch (e) {
-        throw new Error('invalid_argument: Could not verify the JWT')
+        debug('encountered error while verifying Enveloping Proof credential: %o', e)
+        const { message, errorCode } = e
+        return {
+          verified: false,
+          error: {
+            message,
+            errorCode: errorCode ? errorCode : e.message.split(':')[0],
+          },
+        }
       }
     } else {
       throw new Error('invalid_argument: Unknown credential type.')
