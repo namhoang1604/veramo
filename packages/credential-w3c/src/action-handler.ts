@@ -673,7 +673,7 @@ async function verifyJWT(jwt: string, context: VerifierAgentContext) {
   }
 
   // Resolve the DID to get the DID document
-  const doc = await context.agent.resolveDid({ didUrl })
+  const doc = await context.agent.resolveDid({ didUrl: didUrl.toString() }) // Convert didUrl to string
   let publicKey
   let types = ['JsonWebKey'] // default type
   const verificationMethod = doc.didDocument?.verificationMethod
