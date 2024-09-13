@@ -882,6 +882,24 @@ export const schema = {
           ],
           "description": "Input arguments for  {@link IKeyManager.keyManagerSignEthTX | keyManagerSignEthTX }"
         },
+        "IKeyManagerSignJOSE": {
+          "type": "object",
+          "properties": {
+            "kid": {
+              "type": "string",
+              "description": "Key ID"
+            },
+            "data": {
+              "type": "string",
+              "description": "Data to sign"
+            }
+          },
+          "required": [
+            "kid",
+            "data"
+          ],
+          "description": "Input arguments for  {@link IKeyManager.IKeyManagerSignJOSE | IKeyManagerSignJOSE }"
+        },
         "IKeyManagerSignJWTArgs": {
           "type": "object",
           "properties": {
@@ -1037,6 +1055,15 @@ export const schema = {
           "description": "Signs Ethereum transaction",
           "arguments": {
             "$ref": "#/components/schemas/IKeyManagerSignEthTXArgs"
+          },
+          "returnType": {
+            "type": "string"
+          }
+        },
+        "keyManagerSignJOSE": {
+          "description": "Signs JOSE object",
+          "arguments": {
+            "$ref": "#/components/schemas/IKeyManagerSignJOSE"
           },
           "returnType": {
             "type": "string"

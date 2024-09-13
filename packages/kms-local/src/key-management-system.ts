@@ -13,7 +13,7 @@ import {
   ManagedPrivateKey,
 } from '@veramo/key-manager'
 
-import { EdDSASigner, ES256KSigner, ES256Signer } from 'did-jwt'
+import { bytesToBase64url, EdDSASigner, ES256KSigner, ES256Signer } from 'did-jwt'
 import { ed25519, x25519 } from '@noble/curves/ed25519'
 import { p256 } from '@noble/curves/p256'
 import {
@@ -25,7 +25,6 @@ import {
   getBytes,
   hexlify,
   Transaction,
-  decodeRlp
 } from 'ethers'
 import Debug from 'debug'
 import {
@@ -35,6 +34,8 @@ import {
   convertEd25519PublicKeyToX25519,
   hexToBytes,
 } from '@veramo/utils'
+import * as jose from 'jose'
+import { createPrivateKey } from 'crypto'
 
 const debug = Debug('veramo:kms:local')
 
@@ -118,16 +119,31 @@ export class KeyManagementSystem extends AbstractKeyManagementSystem {
     keyRef,
     algorithm,
     data,
+    envelopingProof,
   }: {
     keyRef: Pick<IKey, 'kid'>
     algorithm?: string
     data: Uint8Array
+    envelopingProof?: boolean
   }): Promise<string> {
     let managedKey: ManagedPrivateKey
     try {
       managedKey = await this.keyStore.getKey({ alias: keyRef.kid })
     } catch (e) {
       throw new Error(`key_not_found: No key entry found for kid=${keyRef.kid}`)
+    }
+
+    // If the key is in Envoloping Proof format, we need to use a different signing method
+    if (envelopingProof) {
+      // Supported algorithms for Enveloping Proof
+      if (
+        (managedKey.type === 'Ed25519' && typeof algorithm === 'undefined') ||
+        (typeof algorithm !== 'undefined' && ['Ed25519', 'EdDSA'].includes(algorithm))
+      ) {
+        return await this.signJOSE(managedKey, data)
+      }
+
+      throw Error(`not_supported: Cannot sign ${algorithm} using key of type ${managedKey.type}`)
     }
 
     if (
@@ -368,5 +384,42 @@ export class KeyManagementSystem extends AbstractKeyManagementSystem {
         throw Error('not_supported: Key type not supported: ' + args.type)
     }
     return key as ManagedKeyInfo
+  }
+
+  /**
+   * Sign data using a private key in JOSE format
+   * @param privateKeyHex  The private key in hexadecimal format
+   * @param data The data to sign
+   * @param alg The algorithm to use
+   * @returns a compact JWS string
+   */
+  private async signJOSE(key: ManagedPrivateKey, data: Uint8Array) {
+    let secretKeyHex = key.privateKeyHex
+    if (key.privateKeyHex.endsWith(key.alias)) {
+      secretKeyHex = key.privateKeyHex.substring(0, key.privateKeyHex.length - key.alias.length)
+    }
+
+    // Convert the key to KeyObject format for jose library
+    const privateKey = createPrivateKey({
+      key: {
+        kty: 'OKP',
+        crv: 'Ed25519',
+        x: bytesToBase64url(hexToBytes(key.alias)),
+
+        d: bytesToBase64url(hexToBytes(secretKeyHex)),
+      },
+      format: 'jwk',
+    })
+
+    const iss = JSON.parse(new TextDecoder('utf-8').decode(data)).issuer
+
+    /**
+     * The Media Types should follow the document:
+     * https://www.w3.org/TR/vc-jose-cose/#media-types
+     */
+    const signature = await new jose.CompactSign(data)
+      .setProtectedHeader({ alg: 'EdDSA', iss, typ: 'vc-ld+jwt' })
+      .sign(privateKey)
+    return signature
   }
 }

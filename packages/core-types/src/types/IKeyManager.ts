@@ -185,6 +185,37 @@ export interface IKeyManagerSignEthTXArgs {
 }
 
 /**
+ * Input arguments for {@link IKeyManager.IKeyManagerSignJOSE | IKeyManagerSignJOSE}
+ * @public
+ */
+export interface IKeyManagerSignJOSE {
+  /**
+   * Key ID
+   */
+  kid: string
+
+  /**
+   * Data to sign
+   */
+  data: string
+}
+
+/**
+ * Input arguments for {@link IKeyManager.IKeyManagerVerifyJOSE | IKeyManagerVerifyJOSE}
+ */
+export interface IKeyManagerVerifyJOSE {
+  /**
+   * Key ID
+   */
+  kid: string
+
+  /**
+   * Data to verify
+   */
+  jws: string
+}
+
+/**
  * Key manager interface.
  *
  * This defines an interface for a plugin that orchestrates various implementations of
@@ -263,4 +294,7 @@ export interface IKeyManager extends IPluginMethodMap {
 
   /** Signs Ethereum transaction */
   keyManagerSignEthTX(args: IKeyManagerSignEthTXArgs): Promise<string>
+
+  /** Signs JOSE object */
+  keyManagerSignJOSE(args: IKeyManagerSignJOSE): Promise<string>
 }
