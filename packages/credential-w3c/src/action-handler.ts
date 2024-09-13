@@ -628,7 +628,7 @@ function detectDocumentType(document: W3CVerifiableCredential | W3CVerifiablePre
   if (typeof document === 'string') {
     const detectJWT = jose.decodeJwt(document)
     if (typeof document === 'string' && detectJWT.hasOwnProperty('issuer'))
-      return 3 /* DocumentFormat.ENVELOPING_PROOF */
+      return DocumentFormat.ENVELOPING_PROOF
   }
   if (typeof document === 'string' || (<VerifiableCredential>document)?.proof?.jwt) return DocumentFormat.JWT
   if ((<VerifiableCredential>document)?.proof?.type === 'EthereumEip712Signature2021')
