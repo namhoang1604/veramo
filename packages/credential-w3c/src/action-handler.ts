@@ -662,11 +662,14 @@ async function isRevoked(
 async function verifyJWT(jwt: string, context: VerifierAgentContext) {
   // get iss in header
   const header = jose.decodeProtectedHeader(jwt)
-  const didUrl = header.iss
-  if (!didUrl) {
+  if (!header.hasOwnProperty('iss')) {
     throw new Error('Invalid JWT: iss field not found in header')
   }
 
+  if (typeof header.iss !== 'string') {
+    throw new Error('Invalid JWT: iss should be a string')
+  }
+  const didUrl = header.iss
   const payload = jose.decodeJwt(jwt)
   if (payload.issuer !== didUrl) {
     throw new Error('Invalid JWT: iss field in header does not match issuer field in payload')
